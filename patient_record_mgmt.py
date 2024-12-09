@@ -1,63 +1,93 @@
-# Import necessary modules
-from patient_record_mgmt import PatientRecordManagementSystem
+import csv
+import graphviz
+from binary_search_tree import BinarySearchTree, Node
 
-# Initialize the PatientRecordManagementSystem
-prms = PatientRecordManagementSystem()
 
-# Build the BST from the CSV file
-csv_file_path = "data/patient_records.csv"  # Replace with your actual CSV file path
-prms.build_tree_from_csv(csv_file_path)
+class PatientRecord :
+    def __init__(self, patient_id, name, age, diagnosis, blood_pressure, pulse, body_temperature):
 
-# Display all records after loading the CSV
-print("\nAll Patient Records (Initial):")
-prms.display_all_records()
+        self.patient_id = patient_id
+        self.name = name
+        self.age = age
+        self.diagnosis = diagnosis
+        self.blood_pressure = blood_pressure
+        self.pulse = pulse
+        self.body_temperature = body_temperature
 
-# Visualize the initial tree
-prms.visualize_tree(output_file="initial_patient_records_tree")
+class PatientRecordManagementSystem:
+    def __init__(self):
+        """Initializes the management system with an empty BST."""
+        self.bst = BinarySearchTree()
+    
+    def add_patient_record(self, patient_id, name, age, diagnosis, blood_pressure, pulse, body_temperature):
+        """Adds a new patient record to the system."""
+        record = PatientRecord(patient_id, name, age, diagnosis, blood_pressure, pulse, body_temperature)
+        node = Node(patient_id, record)
+        self.bst.insert(node)
+    
+    def search_patient_record(self, patient_id):
+        """Searches for a patient record by ID."""
+        result = self.bst.search(patient_id)
+        if result:
+            record = result.value
+            print(f"Patient Found - ID: {record.patient_id}, Name: {record.name}, Age: {record.age}, "
+                  f"Diagnosis: {record.diagnosis}, BP: {record.blood_pressure}, Pulse: {record.pulse}, "
+                  f"Temperature: {record.body_temperature}")
+            return record
+        else:
+            print(f"Patient ID {patient_id} not found.")
+            return None
 
-# Search for specific patient records (IDs: 2, 25, 47)
-print("\nSearch for patient records with IDs 2, 25, and 47:")
-prms.search_patient_record(2)
-prms.search_patient_record(25)
-prms.search_patient_record(47)
+    def delete_patient_record(self, patient_id):
+        """Deletes a patient record from the system."""
+        if self.bst.search(patient_id):
+            self.bst.remove(patient_id)
+            print(f"Deleted Patient ID: {patient_id}")
+        else:
+            print(f"Patient ID {patient_id} not found. Cannot delete.")
+    
+    def display_all_records(self):
+        """Displays all patient records using inorder traversal."""
+        print("All Patient Records (Inorder Traversal):")
+        self.bst.inorder_traversal(self.bst.root)
 
-# Delete records (IDs: 3, 10, and 30)
-print("\nDeleting records with IDs 3, 10, and 30...")
-prms.delete_patient_record(3)
-prms.delete_patient_record(10)
-prms.delete_patient_record(30)
+    def build_tree_from_csv(self, file_path):
+        """Builds the BST from a CSV file."""
+        try:
+            with open(file_path, mode='r') as file:
+                # Normalize headers to lowercase for uniform access
+                csv_reader = csv.DictReader(file)
+                csv_reader.fieldnames = [field.strip().lower() for field in csv_reader.fieldnames]
+                
+                for row in csv_reader:
+                    self.add_patient_record(
+                        int(row["patientid"]),  # Adjusted for lowercase "patientid"
+                        row["name"],
+                        int(row["age"]),
+                        row["diagnosis"],
+                        row["bloodpressure"],
+                        int(row["pulse"]),
+                        float(row["bodytemperature"])
+                    )
+                print("Tree built from CSV successfully.")
+        except Exception as e:
+            print(f"Error while reading CSV file: {e}")
 
-# Display all records after deletion
-print("\nAll Patient Records (After Deletion):")
-prms.display_all_records()
-
-# Visualize the tree after deletion
-prms.visualize_tree(output_file="after-deletion_patient_records_tree")
-
-# Add new records to the BST
-new_records = [
-    (51, "Jacob Marley", 40, "Migraine", "120/80", 70, 37.0),
-    (58, "Robert Shea", 55, "Back Pain", "130/85", 75, 36.8),
-    (3, "Joan Smith", 33, "Anxiety", "115/75", 68, 37.1)
-]
-
-print("\nInserting new patient records:")
-for record in new_records:
-    prms.add_patient_record(*record)
-
-# Display all records after insertion
-print("\nAll Patient Records (After Insertion):")
-prms.display_all_records()
-
-# Visualize the tree after insertion
-prms.visualize_tree(output_file="after-insertion_patient_records_tree")
-
-# Perform and display tree traversals
-print("\nAll Patient Records (Inorder Traversal):")
-prms.bst.inorder_traversal(prms.bst.root)
-
-print("\nAll Patient Records (Preorder Traversal):")
-prms.bst.preorder_traversal(prms.bst.root)
-
-print("\nAll Patient Records (Postorder Traversal):")
-prms.bst.postorder_traversal(prms.bst.root)
+    
+    def visualize_tree(self, output_file="patient_records_tree"):
+        """Visualizes the BST using Graphviz and saves the result to a file."""
+        dot = graphviz.Digraph()
+        self._add_nodes(dot, self.bst.root)
+        dot.render(output_file, format="png", cleanup=True)
+        print(f"Tree visualization saved as {output_file}.png")
+    
+    def _add_nodes(self, dot, node):
+        """Recursively adds nodes and edges to the Graphviz tree."""
+        if node:
+            dot.node(str(node.key), f"{node.key}: {node.value.name}")
+            if node.left:
+                dot.edge(str(node.key), str(node.left.key))
+                self._add_nodes(dot, node.left)
+            if node.right:
+                dot.edge(str(node.key), str(node.right.key))
+                self._add_nodes(dot, node.right)
