@@ -112,3 +112,33 @@ class BinarySearchTree:
                 current_node = current_node.left
                 
         return # Node not found
+    
+    def inorder_traversal(self, node):
+        """Traverse the tree in inorder (Left, Root, Right)"""
+        if node is not None:
+            self.inorder_traversal(node.left)
+            print(f"Patient ID: {node.value.patient_id}, Name: {node.value.name}, "
+                  f"Age: {node.value.age}, Diagnosis: {node.value.diagnosis}, "
+                  f"BP: {node.value.blood_pressure}, Pulse: {node.value.pulse}, "
+                  f"Temperature: {node.value.body_temperature}")
+            self.inorder_traversal(node.right)
+
+    def preorder_traversal(self, node):
+        """Traverse the tree in preorder (Root, Left, Right)"""
+        if node is not None:
+            print(f"Patient ID: {node.value.patient_id}, Name: {node.value.name}, "
+                  f"Age: {node.value.age}, Diagnosis: {node.value.diagnosis}, "
+                  f"BP: {node.value.blood_pressure}, Pulse: {node.value.pulse}, "
+                  f"Temperature: {node.value.body_temperature}")
+            self.preorder_traversal(node.left)
+            self.preorder_traversal(node.right)
+
+    def postorder_traversal(self, node):
+        """Traverse the tree in postorder (Left, Right, Root)"""
+        if node is not None:
+            self.postorder_traversal(node.left)
+            self.postorder_traversal(node.right)
+            print(f"Patient ID: {node.value.patient_id}, Name: {node.value.name}, "
+                  f"Age: {node.value.age}, Diagnosis: {node.value.diagnosis}, "
+                  f"BP: {node.value.blood_pressure}, Pulse: {node.value.pulse}, "
+                  f"Temperature: {node.value.body_temperature}")
